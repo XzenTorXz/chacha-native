@@ -23,6 +23,9 @@ void Chacha::Init(v8::Local<v8::Object> exports) {
 void Chacha::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
   if (info.IsConstructCall()) {
+	if (info.Length() != 2) {
+	  return Nan::ThrowError("must supply 2 arguments");
+	}
     if (info.Length() != 2 ||
         !Buffer::HasInstance(info[0]) ||
         !Buffer::HasInstance(info[1])) {
@@ -35,11 +38,11 @@ void Chacha::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if (len != 32) {
       return Nan::ThrowError("invalid key length");
     }
-    if (ivlen != 12) {
+    if (ivlen != 8) {
       return Nan::ThrowError("invalid nonce length");
     }
-    chacha20_ctx ctx;
-    chacha20_setup(&ctx, key, len, iv);
+    chacha8_ctx ctx;
+    chacha8_setup(&ctx, key, len, iv);
     Chacha* obj = new Chacha();
     obj->ctx_ = ctx;
     obj->Wrap(info.This());
@@ -61,7 +64,7 @@ void Chacha::Update(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   unsigned char* input = reinterpret_cast<unsigned char*>(Buffer::Data(info[0]));
   size_t len = Buffer::Length(info[0]);
   unsigned char* out = new unsigned char[len];
-  if (!chacha20_encrypt(&obj->ctx_, input, out, len)) {
+  if (!chacha8_encrypt(&obj->ctx_, input, out, len)) {
     return Nan::ThrowError("counter exausted");
   };
   v8::Local<v8::Value> res = Nan::NewBuffer(reinterpret_cast<char*>(out), len).ToLocalChecked();

@@ -1,13 +1,13 @@
 {
-  "name": "chacha-native",
-  "version": "2.0.2",
-  "description": "native chacha20/poly1305 bindings in nodejs",
-  "main": "lib",
+  "name": "chacha8-native",
+  "version": "0.9.0",
+  "description": "native chacha8 bindings in nodejs",
+  "main": "lib/chacha8",
   "gypfile": true,
   "license": "MIT",
   "scripts": {
     "build": "node-gyp rebuild",
-    "test": "node test.js | tspec"
+    "test": "mocha tests"
   },
   "dependencies": {
     "bindings": "^1.2.1",
@@ -15,12 +15,13 @@
     "nan": "^2.4.0"
   },
   "devDependencies": {
-    "chacha": "^1.1.2",
-    "tap-spec": "^2.2.2",
-    "tape": "^3.5.0"
+    "chacha8-js": "^0.9.3",
+    "tape": "^3.5.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.0.1"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:calvinmetcalf/chacha-native.git"
+    "url": "https://github.com/XzenTorXz/chacha8-native.git"
   }
 }

@@ -2,7 +2,7 @@
 #define CHACHA_H
 
 #include <nan.h>
-#include "chacha20_simple.h"
+#include "chacha8_simple.h"
 
 class Chacha : public node::ObjectWrap {
  public:
@@ -16,7 +16,7 @@ class Chacha : public node::ObjectWrap {
   static NAN_METHOD(Update);
   static Nan::Persistent<v8::Function> constructor;
 
-  chacha20_ctx ctx_;
+  chacha8_ctx ctx_;
 };
 
 #endif

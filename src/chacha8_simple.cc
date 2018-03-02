@@ -1,4 +1,5 @@
 /*
+Copyright (C) 2018 XzenTorXz
 Copyright (C) 2014 insane coder (http://insanecoding.blogspot.com/, http://chacha20.insanecoding.org/)
 
 Permission to use, copy, modify, and distribute this software for any
@@ -17,10 +18,10 @@ This implementation is intended to be simple, many optimizations can be performe
 */
 
 
-#include "chacha20_simple.h"
+#include "chacha8_simple.h"
 const char *constants = "expand 32-byte k";
 
-void chacha20_setup(chacha20_ctx *ctx, const uint8_t *key, size_t length, const uint8_t *nonce)
+void chacha8_setup(chacha8_ctx *ctx, const uint8_t *key, size_t length, const uint8_t *nonce)
 {
   ctx->schedule[0] = LE(constants + 0);
   ctx->schedule[1] = LE(constants + 4);
@@ -36,9 +37,9 @@ void chacha20_setup(chacha20_ctx *ctx, const uint8_t *key, size_t length, const 
   ctx->schedule[11] = LE(key + 28 % length);
   //Surprise! This is really a block cipher in CTR mode
   ctx->schedule[12] = 0; //Counter
-  ctx->schedule[13] = LE(nonce+0);
-  ctx->schedule[14] = LE(nonce+4);
-  ctx->schedule[15] = LE(nonce+8);
+  ctx->schedule[13] = 0;
+  ctx->schedule[14] = LE(nonce+0);
+  ctx->schedule[15] = LE(nonce+4);
 
   ctx->available = 0;
 }
@@ -49,10 +50,10 @@ void chacha20_setup(chacha20_ctx *ctx, const uint8_t *key, size_t length, const 
     x[a] += x[b]; x[d] = ROTL32(x[d] ^ x[a], 8); \
     x[c] += x[d]; x[b] = ROTL32(x[b] ^ x[c], 7);
 
-bool chacha20_block(chacha20_ctx *ctx, uint32_t output[16])
+bool chacha8_block(chacha8_ctx *ctx, uint32_t output[16])
 {
   uint32_t *const nonce = ctx->schedule+12; //12 is where the 128 bit counter is
-  int i = 10;
+  int i = 4;
 
   memcpy(output, ctx->schedule, sizeof(ctx->schedule));
 
@@ -83,13 +84,13 @@ bool chacha20_block(chacha20_ctx *ctx, uint32_t output[16])
   return true;
 }
 
-static inline void chacha20_xor(uint8_t *keystream, const uint8_t **in, uint8_t **out, size_t length)
+static inline void chacha8_xor(uint8_t *keystream, const uint8_t **in, uint8_t **out, size_t length)
 {
   uint8_t *end_keystream = keystream + length;
   do { *(*out)++ = *(*in)++ ^ *keystream++; } while (keystream < end_keystream);
 }
 
-bool chacha20_encrypt(chacha20_ctx *ctx, const uint8_t *in, uint8_t *out, size_t length)
+bool chacha8_encrypt(chacha8_ctx *ctx, const uint8_t *in, uint8_t *out, size_t length)
 {
   if (length)
   {
@@ -99,7 +100,7 @@ bool chacha20_encrypt(chacha20_ctx *ctx, const uint8_t *in, uint8_t *out, size_t
     if (ctx->available)
     {
       size_t amount = MIN(length, ctx->available);
-      chacha20_xor(k + (sizeof(ctx->keystream)-ctx->available), &in, &out, amount);
+      chacha8_xor(k + (sizeof(ctx->keystream)-ctx->available), &in, &out, amount);
       ctx->available -= amount;
       length -= amount;
     }
@@ -108,10 +109,10 @@ bool chacha20_encrypt(chacha20_ctx *ctx, const uint8_t *in, uint8_t *out, size_t
     while (length)
     {
       size_t amount = MIN(length, sizeof(ctx->keystream));
-      if (!chacha20_block(ctx, ctx->keystream)){
+      if (!chacha8_block(ctx, ctx->keystream)){
         return false;
       }
-      chacha20_xor(k, &in, &out, amount);
+      chacha8_xor(k, &in, &out, amount);
       length -= amount;
       ctx->available = sizeof(ctx->keystream) - amount;
     }
